@@ -80,15 +80,14 @@ Ypos = float(index[1])
 while collisions < maxCollisions:
     col = np.zeros(cimg.shape, dtype=np.uint8)
 
+    if Xpos <= index[2] or col.shape[1] - Xpos <= index[2]:
+        velX = -1*velX
+        
+    if Ypos <= index[2] or col.shape[0] - Ypos <= index[2]:
+        velY = -1*velY
+
     Xpos = Xpos + velX
     Ypos = Ypos + velY
-
-    if Xpos < index[2] or col.shape[1] - Xpos < index[2]:
-        velX = -1*velX
-        collisions = collisions + 1
-    if Ypos < index[2] or col.shape[0] - Ypos < index[2]:
-        velY = -1*velY
-        collisions = collisions + 1
 
     for i in circles[0,:]:
         cv2.circle(col, (i[0], i[1]), i[2], (0,255,0), 2)
@@ -108,7 +107,7 @@ while collisions < maxCollisions:
                 print(index)
                 collisions = collisions + 1
 
-    ch = 0xFF & cv2.waitKey(10)
+    ch = 0xFF & cv2.waitKey(1)
     if ch == 27:
         break
     cv2.imshow('collisions', col)
