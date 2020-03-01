@@ -11,7 +11,7 @@ image = 'task2.png'
 img = cv2.imread(image, 0)
 edges = cv2.Canny(img, 20, 60, apertureSize=3)
 img = cv2.medianBlur(img, 5)
-lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, 50, 50)
+lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, 50, 20)
 cimg = cv2.imread(image, 1)
 
 cueX1, cueY1, cueX2, cueY2 = (0, 0, 0, 0)
@@ -30,9 +30,14 @@ if lines is not None:
 
 else:
     print('No cue found! Exiting....')
+    cv2.imshow("Canny", edges)
+    cv2.waitKey(0)
     exit()
 
 small = np.inf
+c = 0
+X = []
+Y = []
 
 if circles is not None:
     circles = np.uint16(np.around(circles))
@@ -41,6 +46,10 @@ if circles is not None:
         cv2.circle(cimg, (i[0], i[1]), i[2], (0,255,0), 2)
         # draw the center of the circle
         cv2.circle(cimg, (i[0], i[1]), 2, (0,0,255), 3)
+
+        X.append(float(i[0]))
+        Y.append(float(i[1]))
+        c += 1
 
         global index
 
@@ -88,25 +97,32 @@ while collisions < maxCollisions:
 
     Xpos = Xpos + velX
     Ypos = Ypos + velY
+    c = 0
 
     for i in circles[0,:]:
+        i[0] = int(X[c])
+        i[1] = int(Y[c])
+
         cv2.circle(col, (i[0], i[1]), i[2], (0,255,0), 2)
         cv2.circle(col, (i[0], i[1]), 2, (0,0,255), 3)
-
+        
         comp = index == i
         if comp.all():
-            i[0] = int(Xpos)
-            i[1] = int(Ypos)
+            X[c] = Xpos
+            Y[c] = Ypos
+            i[0] = int(X[c])
+            i[1] = int(Y[c])
             index = i 
         else:
-            dist = calculateDistance(Xpos, Ypos, i[0], i[1])
+            dist = calculateDistance(Xpos, Ypos, X[c], Y[c])
             if dist <= float(i[2] + index[2]):
                 index = i
-                Xpos = float(index[0])
-                Ypos = float(index[1])
+                Xpos = X[c]
+                Ypos = Y[c]
                 print(index)
                 collisions = collisions + 1
 
+        c += 1
     ch = 0xFF & cv2.waitKey(1)
     if ch == 27:
         break
